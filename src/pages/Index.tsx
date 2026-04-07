@@ -105,6 +105,44 @@ const Index = () => {
     fetchTransactions();
   };
 
+  const handleAddFixed = async (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string; installments?: number }) => {
+    if (!user) return;
+    if (expense.installments && expense.installments > 1) {
+      const perInstallment = expense.amount / expense.installments;
+      const inserts = Array.from({ length: expense.installments }, (_, i) => ({
+        name: `${expense.name} (${i + 1}/${expense.installments})`,
+        amount: Math.round(perInstallment * 100) / 100,
+        due_day: expense.dueDay,
+        category: expense.category,
+        icon: expense.icon,
+        user_id: user.id,
+        paid: false,
+      }));
+      const { error } = await supabase.from("fixed_expenses").insert(inserts);
+      if (error) {
+        toast.error("Erro ao adicionar parcelas");
+        return;
+      }
+      toast.success(`${expense.installments} parcelas adicionadas!`);
+    } else {
+      const { error } = await supabase.from("fixed_expenses").insert({
+        name: expense.name,
+        amount: expense.amount,
+        due_day: expense.dueDay,
+        category: expense.category,
+        icon: expense.icon,
+        user_id: user.id,
+        paid: false,
+      });
+      if (error) {
+        toast.error("Erro ao adicionar conta fixa");
+        return;
+      }
+      toast.success("Conta fixa adicionada!");
+    }
+    fetchFixedExpenses();
+  };
+
   const handleTogglePaid = async (id: string) => {
     const expense = fixedExpenses.find((e) => e.id === id);
     if (!expense) return;
@@ -161,7 +199,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <DateFilter startDate={startDate} endDate={endDate} onStartDateChange={setStartDate} onEndDateChange={setEndDate} />
-            <AddTransactionDialog onAdd={handleAddTransaction} />
+            <AddTransactionDialog onAdd={handleAddTransaction} onAddFixed={handleAddFixed} />
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={toggleTheme}>
               {preferences.theme_mode === "dark" ? <Sun className="h-5 w-5 text-muted-foreground" /> : <Moon className="h-5 w-5 text-muted-foreground" />}
             </Button>
