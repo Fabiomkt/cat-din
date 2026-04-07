@@ -1,0 +1,1 @@
+DELETE FROM public.gastos_telegram WHERE user_id = '6adc77ae-6941-4eba-93a8-ea5d576fe6de';
