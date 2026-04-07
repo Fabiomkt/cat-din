@@ -233,6 +233,46 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+
+          {/* Telegram Integration */}
+          <Card className="rounded-2xl border-border/50 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Integração com Telegram</CardTitle>
+                  <CardDescription>Vincule seu Telegram para registrar gastos</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm">ID do Telegram</Label>
+                <div className="flex gap-3">
+                  <Input
+                    type="text"
+                    placeholder="Ex: 123456789"
+                    value={telegramId}
+                    onChange={(e) => setTelegramId(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  <Button
+                    onClick={handleLinkTelegram}
+                    disabled={linkingTelegram}
+                    className="rounded-xl"
+                  >
+                    {linkingTelegram ? "Vinculando..." : telegramLinked ? "Atualizar" : "Vincular"}
+                  </Button>
+                </div>
+                {telegramLinked && (
+                  <p className="text-xs text-green-500">✓ Telegram vinculado</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Security */}
           <Card className="rounded-2xl border-border/50 shadow-sm">
             <CardHeader className="pb-3">
