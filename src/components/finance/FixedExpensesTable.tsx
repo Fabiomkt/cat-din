@@ -1,4 +1,4 @@
-import { Home, Zap, Wifi, Car, CreditCard, Droplets, Phone } from "lucide-react";
+import { Home, Zap, Wifi, Car, CreditCard, Droplets, Phone, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
