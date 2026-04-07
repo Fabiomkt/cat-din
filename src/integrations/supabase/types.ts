@@ -50,6 +50,30 @@ export type Database = {
         }
         Relationships: []
       }
+      gastos_telegram: {
+        Row: {
+          data_criacao: string
+          descricao: string | null
+          id: number
+          mensagem_bruta: string
+          valor: number | null
+        }
+        Insert: {
+          data_criacao?: string
+          descricao?: string | null
+          id?: never
+          mensagem_bruta: string
+          valor?: number | null
+        }
+        Update: {
+          data_criacao?: string
+          descricao?: string | null
+          id?: never
+          mensagem_bruta?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
