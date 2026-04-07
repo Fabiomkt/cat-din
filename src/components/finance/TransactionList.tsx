@@ -54,11 +54,20 @@ const TransactionList = ({ transactions, onDelete }: TransactionListProps) => {
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <p className={cn("font-semibold text-sm", tx.type === "income" ? "text-success" : "text-destructive")}>
-                {tx.type === "income" ? "+" : "-"} R$ {Math.abs(tx.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-muted-foreground">{tx.date}</p>
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <p className={cn("font-semibold text-sm", tx.type === "income" ? "text-success" : "text-destructive")}>
+                  {tx.type === "income" ? "+" : "-"} R$ {Math.abs(tx.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-muted-foreground">{tx.date}</p>
+              </div>
+              <button
+                onClick={() => onDelete(tx.id)}
+                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                title="Remover transação"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
         ))}
