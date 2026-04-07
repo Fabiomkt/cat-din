@@ -22,6 +22,7 @@ const Index = () => {
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [loading, setLoading] = useState(true);
+  const [telegramTotal, setTelegramTotal] = useState(0);
 
   const fetchTransactions = useCallback(async () => {
     if (!user) return;
@@ -84,7 +85,7 @@ const Index = () => {
 
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-  const balance = totalIncome - totalExpense;
+  const balance = totalIncome - totalExpense - telegramTotal;
   const totalFixed = fixedExpenses.reduce((s, e) => s + e.amount, 0);
 
   const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => {
@@ -216,7 +217,7 @@ const Index = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard title="Saldo" value={fmt(balance)} icon={Wallet} trend={balance >= 0 ? "Positivo" : "Negativo"} trendUp={balance >= 0} />
           <SummaryCard title="Entradas" value={fmt(totalIncome)} icon={TrendingUp} trend="Este mês" trendUp />
-          <SummaryCard title="Saídas" value={fmt(totalExpense)} icon={TrendingDown} trend="Este mês" trendUp={false} />
+          <SummaryCard title="Saídas" value={fmt(totalExpense + telegramTotal)} icon={TrendingDown} trend="Este mês" trendUp={false} />
           <SummaryCard title="Contas Fixas" value={fmt(totalFixed)} icon={PiggyBank} trend={`${fixedExpenses.filter((e) => e.paid).length}/${fixedExpenses.length} pagas`} trendUp />
         </div>
 
@@ -260,7 +261,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="telegram">
-            <TelegramTransactions />
+            <TelegramTransactions startDate={startDate} endDate={endDate} onTotalsChange={setTelegramTotal} />
           </TabsContent>
         </Tabs>
       </div>
