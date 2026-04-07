@@ -12,6 +12,7 @@ export interface Transaction {
 
 interface TransactionListProps {
   transactions: Transaction[];
+  onDelete: (id: string) => void;
 }
 
 const categoryColors: Record<string, string> = {
