@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3 } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "@/components/finance/SummaryCard";
 import DateFilter from "@/components/finance/DateFilter";
