@@ -165,8 +165,8 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
                 <Input className="rounded-xl" value={fixedName} onChange={(e) => setFixedName(e.target.value)} placeholder="Ex: Aluguel" />
               </div>
               <div className="space-y-2">
-                <Label>Valor (R$)</Label>
-                <Input className="rounded-xl" type="number" value={fixedAmount} onChange={(e) => setFixedAmount(e.target.value)} placeholder="0,00" />
+                <Label>Valor</Label>
+                <CurrencyInput className="rounded-xl" value={fixedAmount} onValueChange={setFixedAmount} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
