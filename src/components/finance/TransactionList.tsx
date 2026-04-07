@@ -27,7 +27,7 @@ const categoryColors: Record<string, string> = {
   "Financiamento": "bg-destructive/10 text-destructive",
 };
 
-const TransactionList = ({ transactions }: TransactionListProps) => {
+const TransactionList = ({ transactions, onDelete }: TransactionListProps) => {
   return (
     <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-border/50">
