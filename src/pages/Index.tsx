@@ -119,6 +119,16 @@ const Index = () => {
     setFixedExpenses((prev) => prev.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e)));
   };
 
+  const handleDeleteExpense = async (id: string) => {
+    const { error } = await supabase.from("fixed_expenses").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao remover cobrança");
+      return;
+    }
+    setFixedExpenses((prev) => prev.filter((e) => e.id !== id));
+    toast.success("Cobrança removida!");
+  };
+
   const toggleTheme = () => {
     updatePreferences({ theme_mode: preferences.theme_mode === "dark" ? "light" : "dark" });
   };
