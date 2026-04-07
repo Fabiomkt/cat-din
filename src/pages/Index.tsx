@@ -8,6 +8,7 @@ import DateFilter from "@/components/finance/DateFilter";
 import TransactionList, { Transaction } from "@/components/finance/TransactionList";
 import FixedExpensesTable, { FixedExpense } from "@/components/finance/FixedExpensesTable";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
+import EditTransactionDialog from "@/components/finance/EditTransactionDialog";
 import TelegramTransactions from "@/components/finance/TelegramTransactions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
