@@ -183,6 +183,29 @@ const Index = () => {
     toast.success("Transação removida!");
   };
 
+  const handleEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveTransaction = async (id: string, data: { description: string; amount: number; type: "income" | "expense"; category: string }) => {
+    const { error } = await supabase.from("transactions").update({
+      description: data.description,
+      amount: data.amount,
+      type: data.type,
+      category: data.category,
+    }).eq("id", id);
+    if (error) {
+      toast.error("Erro ao atualizar transação");
+      return;
+    }
+    toast.success("Transação atualizada!");
+    if (data.category === "Financiamento") {
+      setActiveTab("financing");
+    }
+    fetchTransactions();
+  };
+
   const toggleTheme = () => {
     updatePreferences({ theme_mode: preferences.theme_mode === "dark" ? "light" : "dark" });
   };
