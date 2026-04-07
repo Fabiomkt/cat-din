@@ -85,8 +85,8 @@ const Index = () => {
 
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-  const balance = totalIncome - totalExpense - telegramTotal;
   const totalFixed = fixedExpenses.reduce((s, e) => s + e.amount, 0);
+  const balance = totalIncome - totalExpense - telegramTotal - totalFixed;
 
   const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => {
     if (!user) return;
