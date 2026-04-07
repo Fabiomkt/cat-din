@@ -8,6 +8,7 @@ import DateFilter from "@/components/finance/DateFilter";
 import TransactionList, { Transaction } from "@/components/finance/TransactionList";
 import FixedExpensesTable, { FixedExpense } from "@/components/finance/FixedExpensesTable";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
+import TelegramTransactions from "@/components/finance/TelegramTransactions";
 
 const initialTransactions: Transaction[] = [
   { id: "1", description: "Salário", amount: 5500, type: "income", category: "Salário", date: "05/04/2026" },
