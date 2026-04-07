@@ -24,6 +24,53 @@ const Settings = () => {
   const { user, signOut } = useAuth();
   const { preferences, updatePreferences } = useTheme();
   const navigate = useNavigate();
+  const [telegramId, setTelegramId] = useState("");
+  const [telegramLinked, setTelegramLinked] = useState(false);
+  const [linkingTelegram, setLinkingTelegram] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchTelegram = async () => {
+      const { data } = await supabase
+        .from("perfis_telegram")
+        .select("chat_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) {
+        setTelegramId(String(data.chat_id));
+        setTelegramLinked(true);
+      }
+    };
+    fetchTelegram();
+  }, [user]);
+
+  const handleLinkTelegram = async () => {
+    if (!user || !telegramId.trim()) {
+      toast.error("Digite um ID válido do Telegram");
+      return;
+    }
+    setLinkingTelegram(true);
+    try {
+      if (telegramLinked) {
+        const { error } = await supabase
+          .from("perfis_telegram")
+          .update({ chat_id: Number(telegramId) })
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("perfis_telegram")
+          .insert({ chat_id: Number(telegramId), user_id: user.id });
+        if (error) throw error;
+      }
+      setTelegramLinked(true);
+      toast.success("Telegram vinculado com sucesso!");
+    } catch (err: any) {
+      toast.error("Erro ao vincular Telegram: " + err.message);
+    } finally {
+      setLinkingTelegram(false);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
