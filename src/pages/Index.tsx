@@ -105,6 +105,10 @@ const Index = () => {
               <CreditCard className="h-4 w-4 mr-2" />
               Financiamentos
             </TabsTrigger>
+            <TabsTrigger value="telegram" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Telegram
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="transactions">
