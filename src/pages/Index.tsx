@@ -226,7 +226,7 @@ const Index = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="transactions" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="transactions" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <BarChart3 className="h-4 w-4 mr-2" />
