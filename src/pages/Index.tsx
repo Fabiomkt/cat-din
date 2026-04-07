@@ -199,7 +199,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-3">
             <DateFilter startDate={startDate} endDate={endDate} onStartDateChange={setStartDate} onEndDateChange={setEndDate} />
-            <AddTransactionDialog onAdd={handleAddTransaction} />
+            <AddTransactionDialog onAdd={handleAddTransaction} onAddFixed={handleAddFixed} />
             <Button variant="ghost" size="icon" className="rounded-xl" onClick={toggleTheme}>
               {preferences.theme_mode === "dark" ? <Sun className="h-5 w-5 text-muted-foreground" /> : <Moon className="h-5 w-5 text-muted-foreground" />}
             </Button>
