@@ -28,7 +28,7 @@ interface FixedExpensesTableProps {
   onDelete: (id: string) => void;
 }
 
-const FixedExpensesTable = ({ expenses, onTogglePaid }: FixedExpensesTableProps) => {
+const FixedExpensesTable = ({ expenses, onTogglePaid, onDelete }: FixedExpensesTableProps) => {
   const categoryLabels: Record<string, string> = {
     casa: "🏠 Contas de Casa",
     financiamento: "🏦 Financiamentos",
