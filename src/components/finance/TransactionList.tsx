@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, MoreHorizontal } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Transaction {
@@ -12,6 +12,7 @@ export interface Transaction {
 
 interface TransactionListProps {
   transactions: Transaction[];
+  onDelete: (id: string) => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -26,7 +27,7 @@ const categoryColors: Record<string, string> = {
   "Financiamento": "bg-destructive/10 text-destructive",
 };
 
-const TransactionList = ({ transactions }: TransactionListProps) => {
+const TransactionList = ({ transactions, onDelete }: TransactionListProps) => {
   return (
     <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-border/50">
@@ -53,11 +54,20 @@ const TransactionList = ({ transactions }: TransactionListProps) => {
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <p className={cn("font-semibold text-sm", tx.type === "income" ? "text-success" : "text-destructive")}>
-                {tx.type === "income" ? "+" : "-"} R$ {Math.abs(tx.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-muted-foreground">{tx.date}</p>
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <p className={cn("font-semibold text-sm", tx.type === "income" ? "text-success" : "text-destructive")}>
+                  {tx.type === "income" ? "+" : "-"} R$ {Math.abs(tx.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-muted-foreground">{tx.date}</p>
+              </div>
+              <button
+                onClick={() => onDelete(tx.id)}
+                className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                title="Remover transação"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
         ))}
