@@ -129,6 +129,16 @@ const Index = () => {
     toast.success("Cobrança removida!");
   };
 
+  const handleDeleteTransaction = async (id: string) => {
+    const { error } = await supabase.from("transactions").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao remover transação");
+      return;
+    }
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    toast.success("Transação removida!");
+  };
+
   const toggleTheme = () => {
     updatePreferences({ theme_mode: preferences.theme_mode === "dark" ? "light" : "dark" });
   };
