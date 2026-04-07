@@ -208,7 +208,7 @@ const Index = () => {
             ) : transactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">Nenhuma transação encontrada. Adicione sua primeira transação!</div>
             ) : (
-              <TransactionList transactions={transactions} />
+              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
             )}
           </TabsContent>
 
