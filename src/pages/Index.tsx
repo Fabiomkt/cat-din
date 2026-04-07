@@ -73,6 +73,11 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <DateFilter startDate={startDate} endDate={endDate} onStartDateChange={setStartDate} onEndDateChange={setEndDate} />
             <AddTransactionDialog onAdd={handleAddTransaction} />
+            <Link to="/settings">
+              <Button variant="ghost" size="icon" className="rounded-xl">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </Link>
           </div>
         </div>
 
