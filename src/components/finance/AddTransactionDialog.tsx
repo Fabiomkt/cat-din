@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch";
 
 interface AddTransactionDialogProps {
-  onAdd: (tx: { description: string; amount: number; type: "income" | "expense"; category: string }) => void;
-  onAddFixed?: (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string; installments?: number }) => void;
+  onAdd: (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => void;
+  onAddFixed?: (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string }) => void;
 }
 
 const transactionCategories = [
@@ -42,6 +42,8 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [category, setCategory] = useState("");
+  const [isInstallment, setIsInstallment] = useState(false);
+  const [installments, setInstallments] = useState("");
 
   // Fixed expense fields
   const [fixedName, setFixedName] = useState("");
@@ -49,28 +51,32 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
   const [fixedDueDay, setFixedDueDay] = useState("");
   const [fixedCategory, setFixedCategory] = useState<"casa" | "financiamento" | "fixa">("fixa");
   const [fixedIcon, setFixedIcon] = useState("home");
-  const [isInstallment, setIsInstallment] = useState(false);
-  const [installments, setInstallments] = useState("");
 
   const resetForm = () => {
     setDescription("");
     setAmount("");
     setType("expense");
     setCategory("");
+    setIsInstallment(false);
+    setInstallments("");
     setFixedName("");
     setFixedAmount("");
     setFixedDueDay("");
     setFixedCategory("fixa");
     setFixedIcon("home");
-    setIsInstallment(false);
-    setInstallments("");
     setMode("transaction");
   };
 
   const handleSubmit = () => {
     if (mode === "transaction") {
       if (!description || !amount || !category) return;
-      onAdd({ description, amount: parseFloat(amount), type, category });
+      onAdd({
+        description,
+        amount: parseFloat(amount),
+        type,
+        category,
+        installments: isInstallment && installments ? parseInt(installments) : undefined,
+      });
     } else {
       if (!fixedName || !fixedAmount || !fixedDueDay) return;
       onAddFixed?.({
@@ -79,7 +85,6 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
         dueDay: parseInt(fixedDueDay),
         category: fixedCategory,
         icon: fixedIcon,
-        installments: isInstallment && installments ? parseInt(installments) : undefined,
       });
     }
     resetForm();
@@ -99,20 +104,11 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
           <DialogTitle>Adicionar</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
-          {/* Mode selector */}
           <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant={mode === "transaction" ? "default" : "outline"}
-              className="rounded-xl"
-              onClick={() => setMode("transaction")}
-            >
+            <Button variant={mode === "transaction" ? "default" : "outline"} className="rounded-xl" onClick={() => setMode("transaction")}>
               Transação
             </Button>
-            <Button
-              variant={mode === "fixed" ? "default" : "outline"}
-              className="rounded-xl"
-              onClick={() => setMode("fixed")}
-            >
+            <Button variant={mode === "fixed" ? "default" : "outline"} className="rounded-xl" onClick={() => setMode("fixed")}>
               Conta Fixa
             </Button>
           </div>
@@ -150,6 +146,16 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
                   </Select>
                 </div>
               </div>
+              <div className="flex items-center justify-between rounded-xl border border-border p-3">
+                <Label className="cursor-pointer">Parcelado?</Label>
+                <Switch checked={isInstallment} onCheckedChange={setIsInstallment} />
+              </div>
+              {isInstallment && (
+                <div className="space-y-2">
+                  <Label>Número de parcelas</Label>
+                  <Input className="rounded-xl" type="number" min="2" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder="Ex: 12" />
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -189,16 +195,6 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-border p-3">
-                <Label className="cursor-pointer">Parcelado?</Label>
-                <Switch checked={isInstallment} onCheckedChange={setIsInstallment} />
-              </div>
-              {isInstallment && (
-                <div className="space-y-2">
-                  <Label>Número de parcelas</Label>
-                  <Input className="rounded-xl" type="number" min="2" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder="Ex: 12" />
-                </div>
-              )}
             </>
           )}
 
