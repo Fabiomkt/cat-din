@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3 } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "@/components/finance/SummaryCard";
 import DateFilter from "@/components/finance/DateFilter";
@@ -93,6 +93,10 @@ const Index = () => {
               <PiggyBank className="h-4 w-4 mr-2" />
               Contas Fixas
             </TabsTrigger>
+            <TabsTrigger value="financing" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Financiamentos
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="transactions">
@@ -100,7 +104,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="fixed">
-            <FixedExpensesTable expenses={fixedExpenses} onTogglePaid={handleTogglePaid} />
+            <FixedExpensesTable expenses={fixedExpenses.filter((e) => e.category !== "financiamento")} onTogglePaid={handleTogglePaid} />
+          </TabsContent>
+
+          <TabsContent value="financing">
+            <FixedExpensesTable expenses={fixedExpenses.filter((e) => e.category === "financiamento")} onTogglePaid={handleTogglePaid} />
           </TabsContent>
         </Tabs>
       </div>
