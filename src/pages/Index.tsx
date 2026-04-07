@@ -22,6 +22,7 @@ const Index = () => {
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [loading, setLoading] = useState(true);
+  const [telegramTotal, setTelegramTotal] = useState(0);
 
   const fetchTransactions = useCallback(async () => {
     if (!user) return;
