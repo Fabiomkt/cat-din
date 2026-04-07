@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard, Settings } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard, Settings, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "@/components/finance/SummaryCard";
@@ -9,50 +9,118 @@ import TransactionList, { Transaction } from "@/components/finance/TransactionLi
 import FixedExpensesTable, { FixedExpense } from "@/components/finance/FixedExpensesTable";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
 import TelegramTransactions from "@/components/finance/TelegramTransactions";
-
-const initialTransactions: Transaction[] = [
-  { id: "1", description: "Salário", amount: 5500, type: "income", category: "Salário", date: "05/04/2026" },
-  { id: "2", description: "Freelance Design", amount: 1200, type: "income", category: "Freelance", date: "03/04/2026" },
-  { id: "3", description: "Aluguel", amount: 1800, type: "expense", category: "Aluguel", date: "01/04/2026" },
-  { id: "4", description: "Supermercado", amount: 650, type: "expense", category: "Mercado", date: "02/04/2026" },
-  { id: "5", description: "Conta de Luz", amount: 180, type: "expense", category: "Energia", date: "10/04/2026" },
-  { id: "6", description: "Internet", amount: 120, type: "expense", category: "Internet", date: "15/04/2026" },
-  { id: "7", description: "Uber", amount: 85, type: "expense", category: "Transporte", date: "06/04/2026" },
-];
-
-const initialFixedExpenses: FixedExpense[] = [
-  { id: "f1", name: "Aluguel", amount: 1800, dueDay: 1, paid: true, icon: "home", category: "casa" },
-  { id: "f2", name: "Conta de Luz", amount: 180, dueDay: 10, paid: false, icon: "zap", category: "casa" },
-  { id: "f3", name: "Água", amount: 95, dueDay: 15, paid: false, icon: "water", category: "casa" },
-  { id: "f4", name: "Internet", amount: 120, dueDay: 20, paid: true, icon: "wifi", category: "casa" },
-  { id: "f5", name: "Financiamento Carro", amount: 1450, dueDay: 5, paid: true, icon: "car", category: "financiamento" },
-  { id: "f6", name: "Financiamento Imóvel", amount: 2200, dueDay: 10, paid: false, icon: "home", category: "financiamento" },
-  { id: "f7", name: "Cartão de Crédito", amount: 890, dueDay: 25, paid: false, icon: "credit", category: "fixa" },
-  { id: "f8", name: "Plano Celular", amount: 69.9, dueDay: 12, paid: true, icon: "phone", category: "fixa" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { toast } from "sonner";
 
 const Index = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>(initialFixedExpenses);
-  const [startDate, setStartDate] = useState(new Date(2026, 3, 1));
-  const [endDate, setEndDate] = useState(new Date(2026, 3, 30));
+  const { user } = useAuth();
+  const { preferences, updatePreferences } = useTheme();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [fixedExpenses, setFixedExpenses] = useState<FixedExpense[]>([]);
+  const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
+  const [loading, setLoading] = useState(true);
+
+  const fetchTransactions = useCallback(async () => {
+    if (!user) return;
+    const startStr = startDate.toISOString().split("T")[0];
+    const endStr = endDate.toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("date", startStr)
+      .lte("date", endStr)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast.error("Erro ao carregar transações");
+      return;
+    }
+    setTransactions(
+      (data || []).map((t) => ({
+        id: t.id,
+        description: t.description,
+        amount: Number(t.amount),
+        type: t.type as "income" | "expense",
+        category: t.category,
+        date: new Date(t.date).toLocaleDateString("pt-BR"),
+      }))
+    );
+  }, [user, startDate, endDate]);
+
+  const fetchFixedExpenses = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("fixed_expenses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("due_day", { ascending: true });
+
+    if (error) {
+      toast.error("Erro ao carregar contas fixas");
+      return;
+    }
+    setFixedExpenses(
+      (data || []).map((e) => ({
+        id: e.id,
+        name: e.name,
+        amount: Number(e.amount),
+        dueDay: e.due_day,
+        paid: e.paid,
+        icon: e.icon,
+        category: e.category as "casa" | "financiamento" | "fixa",
+      }))
+    );
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    setLoading(true);
+    Promise.all([fetchTransactions(), fetchFixedExpenses()]).finally(() => setLoading(false));
+  }, [user, fetchTransactions, fetchFixedExpenses]);
 
   const totalIncome = transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
   const totalExpense = transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
   const balance = totalIncome - totalExpense;
   const totalFixed = fixedExpenses.reduce((s, e) => s + e.amount, 0);
 
-  const handleAddTransaction = (tx: { description: string; amount: number; type: "income" | "expense"; category: string }) => {
-    const newTx: Transaction = {
-      id: Date.now().toString(),
-      ...tx,
-      date: new Date().toLocaleDateString("pt-BR"),
-    };
-    setTransactions((prev) => [newTx, ...prev]);
+  const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string }) => {
+    if (!user) return;
+    const { error } = await supabase.from("transactions").insert({
+      description: tx.description,
+      amount: tx.amount,
+      type: tx.type,
+      category: tx.category,
+      date: new Date().toISOString().split("T")[0],
+      user_id: user.id,
+    });
+    if (error) {
+      toast.error("Erro ao adicionar transação");
+      return;
+    }
+    toast.success("Transação adicionada!");
+    fetchTransactions();
   };
 
-  const handleTogglePaid = (id: string) => {
+  const handleTogglePaid = async (id: string) => {
+    const expense = fixedExpenses.find((e) => e.id === id);
+    if (!expense) return;
+    const { error } = await supabase
+      .from("fixed_expenses")
+      .update({ paid: !expense.paid })
+      .eq("id", id);
+    if (error) {
+      toast.error("Erro ao atualizar");
+      return;
+    }
     setFixedExpenses((prev) => prev.map((e) => (e.id === id ? { ...e, paid: !e.paid } : e)));
+  };
+
+  const toggleTheme = () => {
+    updatePreferences({ theme_mode: preferences.theme_mode === "dark" ? "light" : "dark" });
   };
 
   const fmt = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -74,6 +142,9 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <DateFilter startDate={startDate} endDate={endDate} onStartDateChange={setStartDate} onEndDateChange={setEndDate} />
             <AddTransactionDialog onAdd={handleAddTransaction} />
+            <Button variant="ghost" size="icon" className="rounded-xl" onClick={toggleTheme}>
+              {preferences.theme_mode === "dark" ? <Sun className="h-5 w-5 text-muted-foreground" /> : <Moon className="h-5 w-5 text-muted-foreground" />}
+            </Button>
             <Link to="/settings">
               <Button variant="ghost" size="icon" className="rounded-xl">
                 <Settings className="h-5 w-5 text-muted-foreground" />
@@ -85,8 +156,8 @@ const Index = () => {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard title="Saldo" value={fmt(balance)} icon={Wallet} trend={balance >= 0 ? "Positivo" : "Negativo"} trendUp={balance >= 0} />
-          <SummaryCard title="Entradas" value={fmt(totalIncome)} icon={TrendingUp} trend="+12% vs mês anterior" trendUp />
-          <SummaryCard title="Saídas" value={fmt(totalExpense)} icon={TrendingDown} trend="-5% vs mês anterior" trendUp />
+          <SummaryCard title="Entradas" value={fmt(totalIncome)} icon={TrendingUp} trend="Este mês" trendUp />
+          <SummaryCard title="Saídas" value={fmt(totalExpense)} icon={TrendingDown} trend="Este mês" trendUp={false} />
           <SummaryCard title="Contas Fixas" value={fmt(totalFixed)} icon={PiggyBank} trend={`${fixedExpenses.filter((e) => e.paid).length}/${fixedExpenses.length} pagas`} trendUp />
         </div>
 
@@ -112,7 +183,13 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="transactions">
-            <TransactionList transactions={transactions} />
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">Nenhuma transação encontrada. Adicione sua primeira transação!</div>
+            ) : (
+              <TransactionList transactions={transactions} />
+            )}
           </TabsContent>
 
           <TabsContent value="fixed">
