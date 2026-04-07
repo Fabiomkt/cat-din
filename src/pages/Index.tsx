@@ -252,7 +252,7 @@ const Index = () => {
             ) : transactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">Nenhuma transação encontrada. Adicione sua primeira transação!</div>
             ) : (
-              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
+              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} onEdit={handleEditTransaction} />
             )}
           </TabsContent>
 
@@ -268,6 +268,13 @@ const Index = () => {
             <TelegramTransactions startDate={startDate} endDate={endDate} onTotalsChange={setTelegramTotal} />
           </TabsContent>
         </Tabs>
+
+        <EditTransactionDialog
+          transaction={editingTransaction}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={handleSaveTransaction}
+        />
       </div>
     </div>
   );
