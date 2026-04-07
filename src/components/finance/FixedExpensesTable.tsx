@@ -25,6 +25,7 @@ const iconMap: Record<string, LucideIcon> = {
 interface FixedExpensesTableProps {
   expenses: FixedExpense[];
   onTogglePaid: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 const FixedExpensesTable = ({ expenses, onTogglePaid }: FixedExpensesTableProps) => {
