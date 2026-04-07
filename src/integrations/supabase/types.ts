@@ -53,25 +53,37 @@ export type Database = {
       gastos_telegram: {
         Row: {
           data_criacao: string
+          data_vencimento: string | null
           descricao: string | null
           id: number
+          id_grupo_parcela: string | null
           mensagem_bruta: string
+          parcela_atual: number | null
+          total_parcelas: number | null
           user_id: string | null
           valor: number | null
         }
         Insert: {
           data_criacao?: string
+          data_vencimento?: string | null
           descricao?: string | null
           id?: never
+          id_grupo_parcela?: string | null
           mensagem_bruta: string
+          parcela_atual?: number | null
+          total_parcelas?: number | null
           user_id?: string | null
           valor?: number | null
         }
         Update: {
           data_criacao?: string
+          data_vencimento?: string | null
           descricao?: string | null
           id?: never
+          id_grupo_parcela?: string | null
           mensagem_bruta?: string
+          parcela_atual?: number | null
+          total_parcelas?: number | null
           user_id?: string | null
           valor?: number | null
         }
