@@ -1,4 +1,5 @@
-import { ArrowLeft, Bell, Palette, User, Shield, Database, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Bell, Palette, User, Shield, Database, LogOut, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const presetThemes = [
