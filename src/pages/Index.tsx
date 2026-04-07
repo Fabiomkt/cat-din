@@ -87,59 +87,60 @@ const Index = () => {
   const balance = totalIncome - totalExpense;
   const totalFixed = fixedExpenses.reduce((s, e) => s + e.amount, 0);
 
-  const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string }) => {
+  const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => {
     if (!user) return;
-    const { error } = await supabase.from("transactions").insert({
-      description: tx.description,
-      amount: tx.amount,
-      type: tx.type,
-      category: tx.category,
-      date: new Date().toISOString().split("T")[0],
-      user_id: user.id,
-    });
-    if (error) {
-      toast.error("Erro ao adicionar transação");
-      return;
-    }
-    toast.success("Transação adicionada!");
-    fetchTransactions();
-  };
+    const today = new Date().toISOString().split("T")[0];
 
-  const handleAddFixed = async (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string; installments?: number }) => {
-    if (!user) return;
-    if (expense.installments && expense.installments > 1) {
-      const perInstallment = expense.amount / expense.installments;
-      const inserts = Array.from({ length: expense.installments }, (_, i) => ({
-        name: `${expense.name} (${i + 1}/${expense.installments})`,
-        amount: Math.round(perInstallment * 100) / 100,
-        due_day: expense.dueDay,
-        category: expense.category,
-        icon: expense.icon,
+    if (tx.installments && tx.installments > 1) {
+      const perInstallment = Math.round((tx.amount / tx.installments) * 100) / 100;
+      const inserts = Array.from({ length: tx.installments }, (_, i) => ({
+        description: `${tx.description} (${i + 1}/${tx.installments})`,
+        amount: perInstallment,
+        type: tx.type,
+        category: tx.category,
+        date: today,
         user_id: user.id,
-        paid: false,
       }));
-      const { error } = await supabase.from("fixed_expenses").insert(inserts);
+      const { error } = await supabase.from("transactions").insert(inserts);
       if (error) {
         toast.error("Erro ao adicionar parcelas");
         return;
       }
-      toast.success(`${expense.installments} parcelas adicionadas!`);
+      toast.success(`${tx.installments} parcelas adicionadas!`);
     } else {
-      const { error } = await supabase.from("fixed_expenses").insert({
-        name: expense.name,
-        amount: expense.amount,
-        due_day: expense.dueDay,
-        category: expense.category,
-        icon: expense.icon,
+      const { error } = await supabase.from("transactions").insert({
+        description: tx.description,
+        amount: tx.amount,
+        type: tx.type,
+        category: tx.category,
+        date: today,
         user_id: user.id,
-        paid: false,
       });
       if (error) {
-        toast.error("Erro ao adicionar conta fixa");
+        toast.error("Erro ao adicionar transação");
         return;
       }
-      toast.success("Conta fixa adicionada!");
+      toast.success("Transação adicionada!");
     }
+    fetchTransactions();
+  };
+
+  const handleAddFixed = async (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string }) => {
+    if (!user) return;
+    const { error } = await supabase.from("fixed_expenses").insert({
+      name: expense.name,
+      amount: expense.amount,
+      due_day: expense.dueDay,
+      category: expense.category,
+      icon: expense.icon,
+      user_id: user.id,
+      paid: false,
+    });
+    if (error) {
+      toast.error("Erro ao adicionar conta fixa");
+      return;
+    }
+    toast.success("Conta fixa adicionada!");
     fetchFixedExpenses();
   };
 
