@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, MoreHorizontal } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Transaction {
