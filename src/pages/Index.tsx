@@ -217,7 +217,7 @@ const Index = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard title="Saldo" value={fmt(balance)} icon={Wallet} trend={balance >= 0 ? "Positivo" : "Negativo"} trendUp={balance >= 0} />
           <SummaryCard title="Entradas" value={fmt(totalIncome)} icon={TrendingUp} trend="Este mês" trendUp />
-          <SummaryCard title="Saídas" value={fmt(totalExpense)} icon={TrendingDown} trend="Este mês" trendUp={false} />
+          <SummaryCard title="Saídas" value={fmt(totalExpense + telegramTotal)} icon={TrendingDown} trend="Este mês" trendUp={false} />
           <SummaryCard title="Contas Fixas" value={fmt(totalFixed)} icon={PiggyBank} trend={`${fixedExpenses.filter((e) => e.paid).length}/${fixedExpenses.length} pagas`} trendUp />
         </div>
 
