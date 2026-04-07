@@ -261,7 +261,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="telegram">
-            <TelegramTransactions />
+            <TelegramTransactions startDate={startDate} endDate={endDate} onTotalsChange={setTelegramTotal} />
           </TabsContent>
         </Tabs>
       </div>
