@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "@/components/finance/SummaryCard";
 import DateFilter from "@/components/finance/DateFilter";
