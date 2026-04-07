@@ -1,4 +1,4 @@
-import { Home, Zap, Wifi, Car, CreditCard, Droplets, Phone } from "lucide-react";
+import { Home, Zap, Wifi, Car, CreditCard, Droplets, Phone, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
@@ -25,9 +25,10 @@ const iconMap: Record<string, LucideIcon> = {
 interface FixedExpensesTableProps {
   expenses: FixedExpense[];
   onTogglePaid: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
-const FixedExpensesTable = ({ expenses, onTogglePaid }: FixedExpensesTableProps) => {
+const FixedExpensesTable = ({ expenses, onTogglePaid, onDelete }: FixedExpensesTableProps) => {
   const categoryLabels: Record<string, string> = {
     casa: "🏠 Contas de Casa",
     financiamento: "🏦 Financiamentos",
@@ -61,7 +62,7 @@ const FixedExpensesTable = ({ expenses, onTogglePaid }: FixedExpensesTableProps)
                       <p className="text-xs text-muted-foreground">Vence dia {expense.dueDay}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <p className="font-semibold text-sm text-foreground">
                       R$ {expense.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </p>
@@ -75,6 +76,13 @@ const FixedExpensesTable = ({ expenses, onTogglePaid }: FixedExpensesTableProps)
                       )}
                     >
                       {expense.paid ? "Pago" : "Pendente"}
+                    </button>
+                    <button
+                      onClick={() => onDelete(expense.id)}
+                      className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Remover cobrança"
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
