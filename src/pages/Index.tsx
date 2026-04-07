@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, BarChart3, CreditCard, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "@/components/finance/SummaryCard";
 import DateFilter from "@/components/finance/DateFilter";
@@ -71,6 +73,11 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <DateFilter startDate={startDate} endDate={endDate} onStartDateChange={setStartDate} onEndDateChange={setEndDate} />
             <AddTransactionDialog onAdd={handleAddTransaction} />
+            <Link to="/settings">
+              <Button variant="ghost" size="icon" className="rounded-xl">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </Link>
           </div>
         </div>
 
