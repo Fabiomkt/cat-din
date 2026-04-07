@@ -24,6 +24,9 @@ const Index = () => {
   const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [loading, setLoading] = useState(true);
   const [telegramTotal, setTelegramTotal] = useState(0);
+  const [activeTab, setActiveTab] = useState("transactions");
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     if (!user) return;
