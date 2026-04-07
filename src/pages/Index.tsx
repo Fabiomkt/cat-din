@@ -122,6 +122,10 @@ const Index = () => {
           <TabsContent value="financing">
             <FixedExpensesTable expenses={fixedExpenses.filter((e) => e.category === "financiamento")} onTogglePaid={handleTogglePaid} />
           </TabsContent>
+
+          <TabsContent value="telegram">
+            <TelegramTransactions />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
