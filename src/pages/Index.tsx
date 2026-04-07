@@ -8,6 +8,7 @@ import DateFilter from "@/components/finance/DateFilter";
 import TransactionList, { Transaction } from "@/components/finance/TransactionList";
 import FixedExpensesTable, { FixedExpense } from "@/components/finance/FixedExpensesTable";
 import AddTransactionDialog from "@/components/finance/AddTransactionDialog";
+import EditTransactionDialog from "@/components/finance/EditTransactionDialog";
 import TelegramTransactions from "@/components/finance/TelegramTransactions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,9 @@ const Index = () => {
   const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [loading, setLoading] = useState(true);
   const [telegramTotal, setTelegramTotal] = useState(0);
+  const [activeTab, setActiveTab] = useState("transactions");
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     if (!user) return;
@@ -179,6 +183,29 @@ const Index = () => {
     toast.success("Transação removida!");
   };
 
+  const handleEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveTransaction = async (id: string, data: { description: string; amount: number; type: "income" | "expense"; category: string }) => {
+    const { error } = await supabase.from("transactions").update({
+      description: data.description,
+      amount: data.amount,
+      type: data.type,
+      category: data.category,
+    }).eq("id", id);
+    if (error) {
+      toast.error("Erro ao atualizar transação");
+      return;
+    }
+    toast.success("Transação atualizada!");
+    if (data.category === "Financiamento") {
+      setActiveTab("financing");
+    }
+    fetchTransactions();
+  };
+
   const toggleTheme = () => {
     updatePreferences({ theme_mode: preferences.theme_mode === "dark" ? "light" : "dark" });
   };
@@ -222,7 +249,7 @@ const Index = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="transactions" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="transactions" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <BarChart3 className="h-4 w-4 mr-2" />
@@ -248,7 +275,7 @@ const Index = () => {
             ) : transactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">Nenhuma transação encontrada. Adicione sua primeira transação!</div>
             ) : (
-              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} />
+              <TransactionList transactions={transactions} onDelete={handleDeleteTransaction} onEdit={handleEditTransaction} />
             )}
           </TabsContent>
 
@@ -264,6 +291,13 @@ const Index = () => {
             <TelegramTransactions startDate={startDate} endDate={endDate} onTotalsChange={setTelegramTotal} />
           </TabsContent>
         </Tabs>
+
+        <EditTransactionDialog
+          transaction={editingTransaction}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={handleSaveTransaction}
+        />
       </div>
     </div>
   );

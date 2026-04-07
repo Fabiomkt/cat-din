@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Transaction {
@@ -13,6 +13,7 @@ export interface Transaction {
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
+  onEdit?: (tx: Transaction) => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -27,7 +28,7 @@ const categoryColors: Record<string, string> = {
   "Financiamento": "bg-destructive/10 text-destructive",
 };
 
-const TransactionList = ({ transactions, onDelete }: TransactionListProps) => {
+const TransactionList = ({ transactions, onDelete, onEdit }: TransactionListProps) => {
   return (
     <div className="rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden">
       <div className="p-5 border-b border-border/50">
@@ -61,6 +62,15 @@ const TransactionList = ({ transactions, onDelete }: TransactionListProps) => {
                 </p>
                 <p className="text-xs text-muted-foreground">{tx.date}</p>
               </div>
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(tx)}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/50 transition-colors"
+                  title="Editar transação"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              )}
               <button
                 onClick={() => onDelete(tx.id)}
                 className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
