@@ -203,7 +203,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="fixed">
-            <FixedExpensesTable expenses={fixedExpenses.filter((e) => e.category !== "financiamento")} onTogglePaid={handleTogglePaid} />
+            <FixedExpensesTable expenses={fixedExpenses.filter((e) => e.category !== "financiamento")} onTogglePaid={handleTogglePaid} onDelete={handleDeleteExpense} />
           </TabsContent>
 
           <TabsContent value="financing">
