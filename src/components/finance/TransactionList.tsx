@@ -62,6 +62,15 @@ const TransactionList = ({ transactions, onDelete, onEdit }: TransactionListProp
                 </p>
                 <p className="text-xs text-muted-foreground">{tx.date}</p>
               </div>
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(tx)}
+                  className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/50 transition-colors"
+                  title="Editar transação"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+              )}
               <button
                 onClick={() => onDelete(tx.id)}
                 className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
