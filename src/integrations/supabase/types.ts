@@ -56,6 +56,7 @@ export type Database = {
           descricao: string | null
           id: number
           mensagem_bruta: string
+          user_id: string | null
           valor: number | null
         }
         Insert: {
@@ -63,6 +64,7 @@ export type Database = {
           descricao?: string | null
           id?: never
           mensagem_bruta: string
+          user_id?: string | null
           valor?: number | null
         }
         Update: {
@@ -70,7 +72,26 @@ export type Database = {
           descricao?: string | null
           id?: never
           mensagem_bruta?: string
+          user_id?: string | null
           valor?: number | null
+        }
+        Relationships: []
+      }
+      perfis_telegram: {
+        Row: {
+          chat_id: number
+          data_vinculo: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: number
+          data_vinculo?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: number
+          data_vinculo?: string
+          user_id?: string
         }
         Relationships: []
       }

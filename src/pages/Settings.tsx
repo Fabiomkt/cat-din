@@ -1,4 +1,5 @@
-import { ArrowLeft, Bell, Palette, User, Shield, Database, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Bell, Palette, User, Shield, Database, LogOut, MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const presetThemes = [
@@ -22,6 +24,53 @@ const Settings = () => {
   const { user, signOut } = useAuth();
   const { preferences, updatePreferences } = useTheme();
   const navigate = useNavigate();
+  const [telegramId, setTelegramId] = useState("");
+  const [telegramLinked, setTelegramLinked] = useState(false);
+  const [linkingTelegram, setLinkingTelegram] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchTelegram = async () => {
+      const { data } = await supabase
+        .from("perfis_telegram")
+        .select("chat_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) {
+        setTelegramId(String(data.chat_id));
+        setTelegramLinked(true);
+      }
+    };
+    fetchTelegram();
+  }, [user]);
+
+  const handleLinkTelegram = async () => {
+    if (!user || !telegramId.trim()) {
+      toast.error("Digite um ID válido do Telegram");
+      return;
+    }
+    setLinkingTelegram(true);
+    try {
+      if (telegramLinked) {
+        const { error } = await supabase
+          .from("perfis_telegram")
+          .update({ chat_id: Number(telegramId) })
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("perfis_telegram")
+          .insert({ chat_id: Number(telegramId), user_id: user.id });
+        if (error) throw error;
+      }
+      setTelegramLinked(true);
+      toast.success("Telegram vinculado com sucesso!");
+    } catch (err: any) {
+      toast.error("Erro ao vincular Telegram: " + err.message);
+    } finally {
+      setLinkingTelegram(false);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -181,6 +230,46 @@ const Settings = () => {
                   </div>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+
+          {/* Telegram Integration */}
+          <Card className="rounded-2xl border-border/50 shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Integração com Telegram</CardTitle>
+                  <CardDescription>Vincule seu Telegram para registrar gastos</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm">ID do Telegram</Label>
+                <div className="flex gap-3">
+                  <Input
+                    type="text"
+                    placeholder="Ex: 123456789"
+                    value={telegramId}
+                    onChange={(e) => setTelegramId(e.target.value)}
+                    className="rounded-xl"
+                  />
+                  <Button
+                    onClick={handleLinkTelegram}
+                    disabled={linkingTelegram}
+                    className="rounded-xl"
+                  >
+                    {linkingTelegram ? "Vinculando..." : telegramLinked ? "Atualizar" : "Vincular"}
+                  </Button>
+                </div>
+                {telegramLinked && (
+                  <p className="text-xs text-green-500">✓ Telegram vinculado</p>
+                )}
+              </div>
             </CardContent>
           </Card>
 
