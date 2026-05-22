@@ -45,6 +45,8 @@ supabase secrets set TELEGRAM_WEBHOOK_SECRET="um_segredo_longo"
 Depois do deploy da funcao, configure o webhook no Telegram:
 
 ```bash
+supabase functions deploy telegram-webhook --no-verify-jwt
+
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
   -d "url=https://<PROJECT_REF>.supabase.co/functions/v1/telegram-webhook" \
   -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
