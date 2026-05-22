@@ -29,6 +29,7 @@ const categoryColors: Record<string, string> = {
   Lazer: "bg-primary/10 text-primary",
   Financiamento: "bg-destructive/10 text-destructive",
   Restaurante: "bg-warning/10 text-warning",
+  Bebidas: "bg-primary/10 text-primary",
   Saude: "bg-success/10 text-success",
   Educacao: "bg-primary/10 text-primary",
   Assinaturas: "bg-primary/10 text-primary",

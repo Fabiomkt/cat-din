@@ -31,6 +31,7 @@ const corsHeaders = {
 const categoryRules = [
   { category: "Mercado", keywords: ["mercado", "supermerc", "atacadao", "assai", "carrefour", "extra", "pao de acucar"] },
   { category: "Restaurante", keywords: ["restaurante", "ifood", "ubereats", "burger", "pizza", "lanch", "padaria", "cafe", "almoco", "jantar"] },
+  { category: "Bebidas", keywords: ["agua", "refri", "refrigerante", "monster", "energetico", "bebida", "cerveja", "suco"] },
   { category: "Transporte", keywords: ["uber", "99", "posto", "combust", "gasolina", "estacion", "metro", "onibus", "taxi"] },
   { category: "Energia", keywords: ["energia", "eletropaulo", "enel", "light"] },
   { category: "Internet", keywords: ["internet", "vivo", "claro", "tim", "oi", "netflix", "spotify", "google", "apple.com", "amazon prime"] },
@@ -348,12 +349,32 @@ function helpMessage(chatId: number) {
     "",
     "Comandos:",
     "/resumo - resumo do mes",
+    "Quanto gastei ate agora? - resumo do mes",
     "/resumo semana - ultimos 7 dias",
     "/extrato 30 - ultimos 30 dias",
     "/analise - cortes e sugestoes",
     "",
     "Tambem posso receber PDF de fatura e importar os gastos por categoria.",
   ].join("\n");
+}
+
+function wantsSummary(normalizedText: string) {
+  return (
+    normalizedText.startsWith("/resumo") ||
+    normalizedText.includes("quanto gastei") ||
+    normalizedText.includes("quanto eu gastei") ||
+    normalizedText.includes("total gasto") ||
+    normalizedText.includes("gastei ate agora") ||
+    normalizedText === "resumo"
+  );
+}
+
+function wantsStatement(normalizedText: string) {
+  return normalizedText.startsWith("/extrato") || normalizedText.includes("extrato") || normalizedText.includes("ultimos gastos");
+}
+
+function wantsAnalysis(normalizedText: string) {
+  return normalizedText.startsWith("/analise") || normalizedText.includes("analise") || normalizedText.includes("opcoes de corte") || normalizedText.includes("investimento");
 }
 
 async function handleSummary(supabase: ReturnType<typeof createClient>, token: string, chatId: number, userId: string, text: string) {
@@ -501,17 +522,17 @@ Deno.serve(async (request) => {
     const text = message?.text || "";
     const normalizedText = normalizeText(text);
 
-    if (normalizedText.startsWith("/resumo")) {
+    if (wantsSummary(normalizedText)) {
       await handleSummary(supabase, telegramToken, chatId, userId, text);
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "content-type": "application/json" } });
     }
 
-    if (normalizedText.startsWith("/extrato")) {
+    if (wantsStatement(normalizedText)) {
       await handleStatement(supabase, telegramToken, chatId, userId, text);
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "content-type": "application/json" } });
     }
 
-    if (normalizedText.startsWith("/analise")) {
+    if (wantsAnalysis(normalizedText)) {
       await handleAnalysis(supabase, telegramToken, chatId, userId, text);
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "content-type": "application/json" } });
     }

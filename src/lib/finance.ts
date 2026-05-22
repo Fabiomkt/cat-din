@@ -20,6 +20,7 @@ export const transactionCategories = [
   "Lazer",
   "Financiamento",
   "Restaurante",
+  "Bebidas",
   "Saude",
   "Educacao",
   "Assinaturas",
@@ -30,6 +31,7 @@ export const transactionCategories = [
 const categoryRules: Array<{ category: string; keywords: string[] }> = [
   { category: "Mercado", keywords: ["mercado", "supermerc", "atacadao", "assai", "carrefour", "extra", "pao de acucar"] },
   { category: "Restaurante", keywords: ["restaurante", "ifood", "ubereats", "burger", "pizza", "lanch", "padaria", "cafe"] },
+  { category: "Bebidas", keywords: ["agua", "refri", "refrigerante", "monster", "energetico", "bebida", "cerveja", "suco"] },
   { category: "Transporte", keywords: ["uber", "99", "posto", "combust", "gasolina", "estacion", "metro", "onibus"] },
   { category: "Energia", keywords: ["energia", "eletropaulo", "enel", "light"] },
   { category: "Internet", keywords: ["internet", "vivo", "claro", "tim", "oi", "netflix", "spotify", "google", "apple.com", "amazon prime"] },
