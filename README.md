@@ -33,7 +33,7 @@ npm audit
 
 ## Bot do Telegram
 
-O bot usa a Edge Function `telegram-webhook`.
+O bot usa a Edge Function `catdin_financebot`.
 
 Secrets necessarios no Supabase:
 
@@ -45,10 +45,10 @@ supabase secrets set TELEGRAM_WEBHOOK_SECRET="um_segredo_longo"
 Depois do deploy da funcao, configure o webhook no Telegram:
 
 ```bash
-supabase functions deploy telegram-webhook --no-verify-jwt
+supabase functions deploy catdin_financebot --no-verify-jwt
 
 curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-  -d "url=https://<PROJECT_REF>.supabase.co/functions/v1/telegram-webhook" \
+  -d "url=https://<PROJECT_REF>.supabase.co/functions/v1/catdin_financebot" \
   -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
 ```
 

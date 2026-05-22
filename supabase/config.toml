@@ -2,3 +2,6 @@ project_id = "opfuvvbbjmxghwrilsti"
 
 [functions.telegram-webhook]
 verify_jwt = false
+
+[functions.catdin_financebot]
+verify_jwt = false
