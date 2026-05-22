@@ -30,3 +30,29 @@ npm test
 npm run build
 npm audit
 ```
+
+## Bot do Telegram
+
+O bot usa a Edge Function `telegram-webhook`.
+
+Secrets necessarios no Supabase:
+
+```bash
+supabase secrets set TELEGRAM_BOT_TOKEN="token_do_bot"
+supabase secrets set TELEGRAM_WEBHOOK_SECRET="um_segredo_longo"
+```
+
+Depois do deploy da funcao, configure o webhook no Telegram:
+
+```bash
+curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://<PROJECT_REF>.supabase.co/functions/v1/telegram-webhook" \
+  -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
+```
+
+Fluxos suportados:
+
+- Mensagem de gasto: `gastei 35,90 no mercado hoje`
+- Data explicita: `22/05 farmacia 42,10`
+- PDF de fatura: o bot le, categoriza e importa os gastos
+- `/resumo`, `/extrato`, `/analise`, `/ajuda`

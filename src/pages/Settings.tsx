@@ -96,13 +96,12 @@ const Settings = () => {
 
   const handleExport = async () => {
     if (!user) return;
-    const [transactionsResult, fixedResult, telegramResult] = await Promise.all([
+    const [transactionsResult, fixedResult] = await Promise.all([
       supabase.from("transactions").select("date, description, amount, type, category, source").eq("user_id", user.id).order("date", { ascending: false }),
       supabase.from("fixed_expenses").select("name, amount, due_day, paid, category").eq("user_id", user.id).order("due_day", { ascending: true }),
-      supabase.from("gastos_telegram").select("data_vencimento, descricao, valor, categoria, origem").eq("user_id", user.id).order("data_vencimento", { ascending: false }),
     ]);
 
-    const error = transactionsResult.error || fixedResult.error || telegramResult.error;
+    const error = transactionsResult.error || fixedResult.error;
     if (error) {
       toast.error("Erro ao exportar dados");
       return;
@@ -124,14 +123,6 @@ const Settings = () => {
         categoria: row.category,
         tipo: row.paid ? "paga" : "pendente",
         valor: Number(row.amount),
-      })),
-      ...(telegramResult.data || []).map((row) => ({
-        origem: row.origem || "telegram",
-        data: row.data_vencimento || "",
-        descricao: row.descricao || "",
-        categoria: row.categoria || "Outros",
-        tipo: "expense",
-        valor: Number(row.valor || 0),
       })),
     ];
 

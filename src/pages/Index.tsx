@@ -38,7 +38,6 @@ const Index = () => {
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [endDate, setEndDate] = useState(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0));
   const [loading, setLoading] = useState(true);
-  const [telegramTotal, setTelegramTotal] = useState(0);
   const [activeTab, setActiveTab] = useState("transactions");
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -106,7 +105,7 @@ const Index = () => {
   const totalIncome = transactions.filter((transaction) => transaction.type === "income").reduce((sum, transaction) => sum + transaction.amount, 0);
   const totalExpense = transactions.filter((transaction) => transaction.type === "expense").reduce((sum, transaction) => sum + transaction.amount, 0);
   const totalFixed = fixedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const balance = totalIncome - totalExpense - telegramTotal - totalFixed;
+  const balance = totalIncome - totalExpense - totalFixed;
 
   const handleAddTransaction = async (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => {
     if (!user) return false;
@@ -326,7 +325,7 @@ const Index = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <SummaryCard title="Saldo" value={formatCurrency(balance)} icon={Wallet} trend={balance >= 0 ? "Positivo" : "Negativo"} trendUp={balance >= 0} />
           <SummaryCard title="Entradas" value={formatCurrency(totalIncome)} icon={TrendingUp} trend="Este mes" trendUp />
-          <SummaryCard title="Saidas" value={formatCurrency(totalExpense + telegramTotal)} icon={TrendingDown} trend="Este mes" trendUp={false} />
+          <SummaryCard title="Saidas" value={formatCurrency(totalExpense)} icon={TrendingDown} trend="Este mes" trendUp={false} />
           <SummaryCard title="Contas fixas" value={formatCurrency(totalFixed)} icon={PiggyBank} trend={`${fixedExpenses.filter((expense) => expense.paid).length}/${fixedExpenses.length} pagas`} trendUp />
         </div>
 
@@ -371,7 +370,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="telegram">
-            <TelegramTransactions startDate={startDate} endDate={endDate} onTotalsChange={setTelegramTotal} />
+            <TelegramTransactions startDate={startDate} endDate={endDate} onChanged={fetchTransactions} />
           </TabsContent>
         </Tabs>
 
