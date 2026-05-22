@@ -7,38 +7,35 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { FixedExpenseCategory, transactionCategories, validateDueDay, validatePositiveAmount, validateText } from "@/lib/finance";
+import { toast } from "sonner";
 
 interface AddTransactionDialogProps {
-  onAdd: (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => void;
-  onAddFixed?: (expense: { name: string; amount: number; dueDay: number; category: "casa" | "financiamento" | "fixa"; icon: string }) => void;
+  onAdd: (tx: { description: string; amount: number; type: "income" | "expense"; category: string; installments?: number }) => Promise<boolean>;
+  onAddFixed?: (expense: { name: string; amount: number; dueDay: number; category: FixedExpenseCategory; icon: string }) => Promise<boolean>;
 }
 
-const transactionCategories = [
-  "Salário", "Freelance", "Aluguel", "Mercado", "Energia",
-  "Internet", "Transporte", "Lazer", "Financiamento", "Outros",
-];
-
 const fixedCategories = [
-  { value: "casa", label: "🏠 Contas de Casa" },
-  { value: "financiamento", label: "🏦 Financiamento" },
-  { value: "fixa", label: "📋 Conta Fixa" },
+  { value: "casa", label: "Casa" },
+  { value: "financiamento", label: "Financiamento" },
+  { value: "fixa", label: "Conta fixa" },
 ];
 
 const iconOptions = [
-  { value: "home", label: "🏠 Casa" },
-  { value: "zap", label: "⚡ Energia" },
-  { value: "wifi", label: "📶 Internet" },
-  { value: "car", label: "🚗 Veículo" },
-  { value: "credit", label: "💳 Cartão" },
-  { value: "water", label: "💧 Água" },
-  { value: "phone", label: "📱 Telefone" },
+  { value: "home", label: "Casa" },
+  { value: "zap", label: "Energia" },
+  { value: "wifi", label: "Internet" },
+  { value: "car", label: "Veiculo" },
+  { value: "credit", label: "Cartao" },
+  { value: "water", label: "Agua" },
+  { value: "phone", label: "Telefone" },
 ];
 
 const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) => {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"transaction" | "fixed">("transaction");
+  const [submitting, setSubmitting] = useState(false);
 
-  // Transaction fields
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -46,11 +43,10 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
   const [isInstallment, setIsInstallment] = useState(false);
   const [installments, setInstallments] = useState("");
 
-  // Fixed expense fields
   const [fixedName, setFixedName] = useState("");
   const [fixedAmount, setFixedAmount] = useState("");
   const [fixedDueDay, setFixedDueDay] = useState("");
-  const [fixedCategory, setFixedCategory] = useState<"casa" | "financiamento" | "fixa">("fixa");
+  const [fixedCategory, setFixedCategory] = useState<FixedExpenseCategory>("fixa");
   const [fixedIcon, setFixedIcon] = useState("home");
 
   const resetForm = () => {
@@ -68,36 +64,68 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
     setMode("transaction");
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (submitting) return;
+
     if (mode === "transaction") {
-      if (!description || !amount || !category) return;
-      onAdd({
-        description,
-        amount: parseFloat(amount),
+      const parsedAmount = Number.parseFloat(amount);
+      const parsedInstallments = isInstallment && installments ? Number.parseInt(installments, 10) : undefined;
+      const error =
+        validateText(description, "Descricao") ||
+        validatePositiveAmount(parsedAmount) ||
+        (!category ? "Selecione uma categoria" : null) ||
+        (isInstallment && (!parsedInstallments || parsedInstallments < 2 || parsedInstallments > 120) ? "Parcelas devem estar entre 2 e 120" : null);
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      setSubmitting(true);
+      const success = await onAdd({
+        description: description.trim(),
+        amount: parsedAmount,
         type,
         category,
-        installments: isInstallment && installments ? parseInt(installments) : undefined,
+        installments: parsedInstallments,
       });
+      setSubmitting(false);
+      if (!success) return;
     } else {
-      if (!fixedName || !fixedAmount || !fixedDueDay) return;
-      onAddFixed?.({
-        name: fixedName,
-        amount: parseFloat(fixedAmount),
-        dueDay: parseInt(fixedDueDay),
+      const parsedAmount = Number.parseFloat(fixedAmount);
+      const parsedDueDay = Number.parseInt(fixedDueDay, 10);
+      const error =
+        validateText(fixedName, "Nome da conta") ||
+        validatePositiveAmount(parsedAmount) ||
+        validateDueDay(parsedDueDay);
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      setSubmitting(true);
+      const success = await onAddFixed?.({
+        name: fixedName.trim(),
+        amount: parsedAmount,
+        dueDay: parsedDueDay,
         category: fixedCategory,
         icon: fixedIcon,
       });
+      setSubmitting(false);
+      if (!success) return;
     }
+
     resetForm();
     setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+    <Dialog open={open} onOpenChange={(value) => { setOpen(value); if (!value) resetForm(); }}>
       <DialogTrigger asChild>
         <Button className="rounded-xl gap-2">
           <Plus className="h-4 w-4" />
-          Nova Transação
+          Nova transacao
         </Button>
       </DialogTrigger>
       <DialogContent className="rounded-2xl max-h-[90vh] overflow-y-auto">
@@ -107,18 +135,18 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
         <div className="space-y-4 pt-2">
           <div className="grid grid-cols-2 gap-2">
             <Button variant={mode === "transaction" ? "default" : "outline"} className="rounded-xl" onClick={() => setMode("transaction")}>
-              Transação
+              Transacao
             </Button>
             <Button variant={mode === "fixed" ? "default" : "outline"} className="rounded-xl" onClick={() => setMode("fixed")}>
-              Conta Fixa
+              Conta fixa
             </Button>
           </div>
 
           {mode === "transaction" ? (
             <>
               <div className="space-y-2">
-                <Label>Descrição</Label>
-                <Input className="rounded-xl" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ex: Supermercado" />
+                <Label>Descricao</Label>
+                <Input className="rounded-xl" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Ex: Supermercado" />
               </div>
               <div className="space-y-2">
                 <Label>Valor</Label>
@@ -127,11 +155,11 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Tipo</Label>
-                  <Select value={type} onValueChange={(v) => setType(v as "income" | "expense")}>
+                  <Select value={type} onValueChange={(value) => setType(value as "income" | "expense")}>
                     <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="income">Entrada</SelectItem>
-                      <SelectItem value="expense">Saída</SelectItem>
+                      <SelectItem value="expense">Saida</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -140,8 +168,8 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
                   <Select value={category} onValueChange={setCategory}>
                     <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {transactionCategories.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      {transactionCategories.map((item) => (
+                        <SelectItem key={item} value={item}>{item}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -153,8 +181,8 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
               </div>
               {isInstallment && (
                 <div className="space-y-2">
-                  <Label>Número de parcelas</Label>
-                  <Input className="rounded-xl" type="number" min="2" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder="Ex: 12" />
+                  <Label>Numero de parcelas</Label>
+                  <Input className="rounded-xl" type="number" min="2" max="120" value={installments} onChange={(event) => setInstallments(event.target.value)} placeholder="Ex: 12" />
                 </div>
               )}
             </>
@@ -162,7 +190,7 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
             <>
               <div className="space-y-2">
                 <Label>Nome da conta</Label>
-                <Input className="rounded-xl" value={fixedName} onChange={(e) => setFixedName(e.target.value)} placeholder="Ex: Aluguel" />
+                <Input className="rounded-xl" value={fixedName} onChange={(event) => setFixedName(event.target.value)} placeholder="Ex: Aluguel" />
               </div>
               <div className="space-y-2">
                 <Label>Valor</Label>
@@ -171,27 +199,27 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label>Dia de vencimento</Label>
-                  <Input className="rounded-xl" type="number" min="1" max="31" value={fixedDueDay} onChange={(e) => setFixedDueDay(e.target.value)} placeholder="1-31" />
+                  <Input className="rounded-xl" type="number" min="1" max="31" value={fixedDueDay} onChange={(event) => setFixedDueDay(event.target.value)} placeholder="1-31" />
                 </div>
                 <div className="space-y-2">
                   <Label>Categoria</Label>
-                  <Select value={fixedCategory} onValueChange={(v) => setFixedCategory(v as "casa" | "financiamento" | "fixa")}>
+                  <Select value={fixedCategory} onValueChange={(value) => setFixedCategory(value as FixedExpenseCategory)}>
                     <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {fixedCategories.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                      {fixedCategories.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Ícone</Label>
+                <Label>Icone</Label>
                 <Select value={fixedIcon} onValueChange={setFixedIcon}>
                   <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {iconOptions.map((i) => (
-                      <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>
+                    {iconOptions.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -199,7 +227,9 @@ const AddTransactionDialog = ({ onAdd, onAddFixed }: AddTransactionDialogProps) 
             </>
           )}
 
-          <Button className="w-full rounded-xl" onClick={handleSubmit}>Adicionar</Button>
+          <Button className="w-full rounded-xl" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? "Salvando..." : "Adicionar"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -23,6 +23,7 @@ const defaultPrefs: ThemePreferences = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 function hexToHsl(hex: string): string {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return "217 71% 53%";
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -93,13 +94,18 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     setPreferences(newPrefs);
     applyTheme(newPrefs);
 
-    await supabase
+    const { error } = await supabase
       .from("user_preferences")
       .upsert({
         user_id: user.id,
         ...newPrefs,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
+
+    if (error) {
+      setPreferences(preferences);
+      applyTheme(preferences);
+    }
   };
 
   return (

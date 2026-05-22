@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string, phone?: string) => {
-    const { error, data } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -43,13 +43,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: { full_name: fullName, phone },
       },
     });
-    // Update profile with name and phone after signup
-    if (!error && data.user) {
-      await supabase.from("profiles").update({
-        full_name: fullName || "",
-        phone: phone || "",
-      }).eq("id", data.user.id);
-    }
     return { error: error as Error | null };
   };
 

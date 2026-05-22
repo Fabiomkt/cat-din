@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 
 interface DateFilterProps {
   startDate: Date;
@@ -14,28 +12,35 @@ interface DateFilterProps {
   onEndDateChange: (date: Date) => void;
 }
 
+const getMonthRange = (date: Date) => ({
+  start: new Date(date.getFullYear(), date.getMonth(), 1),
+  end: new Date(date.getFullYear(), date.getMonth() + 1, 0),
+});
+
 const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }: DateFilterProps) => {
-  const goToPreviousMonth = () => {
-    const newStart = new Date(startDate);
-    newStart.setMonth(newStart.getMonth() - 1);
-    const newEnd = new Date(endDate);
-    newEnd.setMonth(newEnd.getMonth() - 1);
-    onStartDateChange(newStart);
-    onEndDateChange(newEnd);
+  const shiftMonth = (direction: -1 | 1) => {
+    const base = new Date(startDate);
+    base.setMonth(base.getMonth() + direction);
+    const range = getMonthRange(base);
+    onStartDateChange(range.start);
+    onEndDateChange(range.end);
   };
 
-  const goToNextMonth = () => {
-    const newStart = new Date(startDate);
-    newStart.setMonth(newStart.getMonth() + 1);
-    const newEnd = new Date(endDate);
-    newEnd.setMonth(newEnd.getMonth() + 1);
-    onStartDateChange(newStart);
-    onEndDateChange(newEnd);
+  const handleStart = (date?: Date) => {
+    if (!date) return;
+    onStartDateChange(date);
+    if (date > endDate) onEndDateChange(date);
+  };
+
+  const handleEnd = (date?: Date) => {
+    if (!date) return;
+    onEndDateChange(date);
+    if (date < startDate) onStartDateChange(date);
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="icon" className="rounded-xl" onClick={goToPreviousMonth}>
+    <div className="flex flex-wrap items-center gap-2">
+      <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shiftMonth(-1)}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
@@ -51,13 +56,13 @@ const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }: 
             <Calendar
               mode="single"
               selected={startDate}
-              onSelect={(d) => d && onStartDateChange(d)}
+              onSelect={handleStart}
               className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
 
-        <span className="text-muted-foreground text-sm">até</span>
+        <span className="text-muted-foreground text-sm">ate</span>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -70,14 +75,14 @@ const DateFilter = ({ startDate, endDate, onStartDateChange, onEndDateChange }: 
             <Calendar
               mode="single"
               selected={endDate}
-              onSelect={(d) => d && onEndDateChange(d)}
+              onSelect={handleEnd}
               className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
       </div>
 
-      <Button variant="outline" size="icon" className="rounded-xl" onClick={goToNextMonth}>
+      <Button variant="outline" size="icon" className="rounded-xl" onClick={() => shiftMonth(1)}>
         <ChevronRight className="h-4 w-4" />
       </Button>
     </div>

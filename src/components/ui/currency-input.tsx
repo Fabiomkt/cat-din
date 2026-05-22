@@ -39,9 +39,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       const num = parseFloat(value);
       if (isNaN(num)) return;
       const formatted = num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (formatted !== display) {
-        setDisplay(formatted);
-      }
+      setDisplay((current) => (formatted !== current ? formatted : current));
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

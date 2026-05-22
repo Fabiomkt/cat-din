@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowDownLeft, MessageSquare, Trash2 } from "lucide-react";
+import ConfirmActionButton from "@/components/ConfirmActionButton";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/finance";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -9,6 +10,7 @@ interface GastoTelegram {
   id: number;
   descricao: string | null;
   valor: number | null;
+  categoria: string | null;
   data_criacao: string;
   data_vencimento: string | null;
   parcela_atual: number | null;
@@ -26,58 +28,62 @@ const TelegramTransactions = ({ startDate, endDate, onTotalsChange }: TelegramTr
   const [gastos, setGastos] = useState<GastoTelegram[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchGastos = async () => {
-    if (!user) return;
-    const startStr = startDate.toISOString().split("T")[0];
-    const endStr = endDate.toISOString().split("T")[0];
-
-    const { data, error } = await supabase
-      .from("gastos_telegram")
-      .select("id, descricao, valor, data_criacao, data_vencimento, parcela_atual, total_parcelas")
-      .eq("user_id", user.id)
-      .gte("data_vencimento", startStr)
-      .lte("data_vencimento", endStr)
-      .order("data_vencimento", { ascending: false });
-
-    if (!error && data) {
-      setGastos(data);
-      const total = data.reduce((s, g) => s + (g.valor ?? 0), 0);
-      onTotalsChange?.(total);
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    setLoading(true);
+    const fetchGastos = async () => {
+      if (!user) return;
+      setLoading(true);
+      const startStr = startDate.toISOString().split("T")[0];
+      const endStr = endDate.toISOString().split("T")[0];
+
+      const { data, error } = await supabase
+        .from("gastos_telegram")
+        .select("id, descricao, valor, categoria, data_criacao, data_vencimento, parcela_atual, total_parcelas")
+        .eq("user_id", user.id)
+        .gte("data_vencimento", startStr)
+        .lte("data_vencimento", endStr)
+        .order("data_vencimento", { ascending: false });
+
+      if (error) {
+        toast.error("Erro ao carregar gastos do Telegram");
+        setLoading(false);
+        return;
+      }
+
+      setGastos(data || []);
+      onTotalsChange?.((data || []).reduce((sum, gasto) => sum + (gasto.valor ?? 0), 0));
+      setLoading(false);
+    };
+
     fetchGastos();
-  }, [user, startDate, endDate]);
+  }, [user, startDate, endDate, onTotalsChange]);
 
   const handleDelete = async (id: number) => {
-    const { error } = await supabase.from("gastos_telegram").delete().eq("id", id);
+    if (!user) return;
+    const { error } = await supabase
+      .from("gastos_telegram")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+
     if (error) {
       toast.error("Erro ao remover gasto");
       return;
     }
-    setGastos((prev) => prev.filter((g) => g.id !== id));
-    toast.success("Gasto removido!");
-    // recalc totals
-    const remaining = gastos.filter((g) => g.id !== id);
-    onTotalsChange?.(remaining.reduce((s, g) => s + (g.valor ?? 0), 0));
-  };
 
-  const formatCurrency = (value: number | null) =>
-    value != null
-      ? `R$ ${Math.abs(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-      : "—";
+    const remaining = gastos.filter((gasto) => gasto.id !== id);
+    setGastos(remaining);
+    onTotalsChange?.(remaining.reduce((sum, gasto) => sum + (gasto.valor ?? 0), 0));
+    toast.success("Gasto removido");
+  };
 
   const formatDate = (dateStr: string | null) =>
     dateStr
-      ? new Date(dateStr + "T00:00:00").toLocaleDateString("pt-BR", {
+      ? new Date(`${dateStr}T00:00:00`).toLocaleDateString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
         })
-      : "—";
+      : "-";
 
   if (loading) {
     return (
@@ -95,41 +101,46 @@ const TelegramTransactions = ({ startDate, endDate, onTotalsChange }: TelegramTr
       </div>
       {gastos.length === 0 ? (
         <div className="p-8 text-center text-muted-foreground text-sm">
-          Nenhum gasto encontrado para este período.
+          Nenhum gasto encontrado para este periodo.
         </div>
       ) : (
         <div className="divide-y divide-border/50">
-          {gastos.map((g) => (
-            <div key={g.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center">
+          {gastos.map((gasto) => (
+            <div key={gasto.id} className="flex items-center justify-between gap-3 p-4 hover:bg-muted/30 transition-colors">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-destructive/10 flex items-center justify-center">
                   <ArrowDownLeft className="h-5 w-5 text-destructive" />
                 </div>
-                <div>
-                  <p className="font-medium text-sm text-foreground">
-                    {g.descricao || "Sem descrição"}
-                    {g.total_parcelas && g.total_parcelas > 1 && (
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-sm text-foreground">
+                    {gasto.descricao || "Sem descricao"}
+                    {gasto.total_parcelas && gasto.total_parcelas > 1 && (
                       <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                        {g.parcela_atual ?? 1}/{g.total_parcelas}
+                        {gasto.parcela_atual ?? 1}/{gasto.total_parcelas}
                       </span>
                     )}
                   </p>
+                  <p className="text-xs text-muted-foreground">{gasto.categoria || "Outros"}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <div className="text-right">
                   <p className="font-semibold text-sm text-destructive">
-                    - {formatCurrency(g.valor)}
+                    - {gasto.valor != null ? formatCurrency(gasto.valor) : "-"}
                   </p>
-                  <p className="text-xs text-muted-foreground">Venc: {formatDate(g.data_vencimento)}</p>
+                  <p className="text-xs text-muted-foreground">Venc: {formatDate(gasto.data_vencimento)}</p>
                 </div>
-                <button
-                  onClick={() => handleDelete(g.id)}
-                  className="p-1.5 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                <ConfirmActionButton
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10 hover:text-destructive"
                   title="Remover gasto"
+                  description={`Remover "${gasto.descricao || "gasto"}" da lista do Telegram?`}
+                  confirmLabel="Remover"
+                  onConfirm={() => handleDelete(gasto.id)}
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </ConfirmActionButton>
               </div>
             </div>
           ))}

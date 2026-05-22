@@ -52,40 +52,76 @@ export type Database = {
       }
       gastos_telegram: {
         Row: {
+          categoria: string | null
           data_criacao: string
           data_vencimento: string | null
           descricao: string | null
           id: number
           id_grupo_parcela: string | null
           mensagem_bruta: string
+          origem: string
           parcela_atual: number | null
           total_parcelas: number | null
           user_id: string | null
           valor: number | null
         }
         Insert: {
+          categoria?: string | null
           data_criacao?: string
           data_vencimento?: string | null
           descricao?: string | null
           id?: never
           id_grupo_parcela?: string | null
           mensagem_bruta: string
+          origem?: string
           parcela_atual?: number | null
           total_parcelas?: number | null
           user_id?: string | null
           valor?: number | null
         }
         Update: {
+          categoria?: string | null
           data_criacao?: string
           data_vencimento?: string | null
           descricao?: string | null
           id?: never
           id_grupo_parcela?: string | null
           mensagem_bruta?: string
+          origem?: string
           parcela_atual?: number | null
           total_parcelas?: number | null
           user_id?: string | null
           valor?: number | null
+        }
+        Relationships: []
+      }
+      statement_imports: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          source: string
+          total_amount: number
+          transactions_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          source: string
+          total_amount?: number
+          transactions_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          source?: string
+          total_amount?: number
+          transactions_count?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -139,6 +175,9 @@ export type Database = {
           date: string
           description: string
           id: string
+          import_id: string | null
+          metadata: Json
+          source: string
           type: string
           user_id: string
         }
@@ -149,6 +188,9 @@ export type Database = {
           date: string
           description: string
           id?: string
+          import_id?: string | null
+          metadata?: Json
+          source?: string
           type: string
           user_id: string
         }
@@ -159,6 +201,9 @@ export type Database = {
           date?: string
           description?: string
           id?: string
+          import_id?: string | null
+          metadata?: Json
+          source?: string
           type?: string
           user_id?: string
         }
